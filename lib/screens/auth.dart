@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+//gives access to firebase object that will be created and managed behind the scenes by firebase sdk
+final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -9,15 +13,36 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   var _isLogin = true;
+
   final _form = GlobalKey<FormState>();
+
   var _enteredEmail = '';
   var _enteredPassword = '';
-  void _submit() {
+
+  void _submit() async {
     final isValid = _form.currentState!.validate();
-    if (isValid) {
-      _form.currentState!.save();
-      print(_enteredEmail);
-      print(_enteredPassword);
+    if (!isValid) {
+      return;
+    }
+    _form.currentState!.save();
+    if (_isLogin) {
+    } else {
+      try {
+        //this method from the firebase sdk will send a http request to firebase
+        //could do manually but here we using sdk
+        final userCredentials = await _firebase.createUserWithEmailAndPassword(
+            email: _enteredEmail, password: _enteredPassword);
+        print(userCredentials);
+      }
+      //using try{} on catch(error){} on exceptions of the provided type (FirebaseAuthException) will be caught and handeled.
+      on FirebaseAuthException catch (error) {
+        // if(error.message == 'email-already-in-use'){
+        //appropiate error message
+        // }
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.message ?? 'Authentication Failed.')));
+      }
     }
   }
 
