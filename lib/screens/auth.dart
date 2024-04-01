@@ -25,24 +25,27 @@ class _AuthScreenState extends State<AuthScreen> {
       return;
     }
     _form.currentState!.save();
-    if (_isLogin) {
-    } else {
-      try {
+    try {
+      if (_isLogin) {
+        final userCredentials = await _firebase.signInWithEmailAndPassword(
+            email: _enteredEmail, password: _enteredPassword);
+        print(userCredentials);
+      } else {
         //this method from the firebase sdk will send a http request to firebase
         //could do manually but here we using sdk
         final userCredentials = await _firebase.createUserWithEmailAndPassword(
             email: _enteredEmail, password: _enteredPassword);
         print(userCredentials);
       }
-      //using try{} on catch(error){} on exceptions of the provided type (FirebaseAuthException) will be caught and handeled.
-      on FirebaseAuthException catch (error) {
-        // if(error.message == 'email-already-in-use'){
-        //appropiate error message
-        // }
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.message ?? 'Authentication Failed.')));
-      }
+    }
+    //using try{} on catch(error){} on exceptions of the provided type (FirebaseAuthException) will be caught and handeled.
+    on FirebaseAuthException catch (error) {
+      // if(error.message == 'email-already-in-use'){
+      //appropiate error message
+      // }
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message ?? 'Authentication Failed.')));
     }
   }
 
